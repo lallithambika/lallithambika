@@ -11,13 +11,12 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Store, AlertCircle, Loader2 } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
+import { authService } from "@/lib/auth"
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
-  const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -29,24 +28,15 @@ export default function LoginPage() {
     const password = formData.get("password") as string
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      const { user, error: authError } = await authService.signIn(email, password)
 
       if (authError) {
-        throw authError
+        setError(authError)
+        return
       }
 
-      if (data.user) {
-        // Get user profile to determine redirect
-        const { data: profile } = await supabase.from("profiles").select("user_type").eq("id", data.user.id).single()
-
-        if (profile) {
-          router.push(`/${profile.user_type}/dashboard`)
-        } else {
-          router.push("/")
-        }
+      if (user) {
+        router.push(`/${user.userType}/dashboard`)
       }
     } catch (error: any) {
       console.error("Login error:", error)
@@ -57,13 +47,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-violet-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl border-0">
         <CardHeader className="text-center">
-          <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
             <Store className="w-6 h-6 text-white" />
           </div>
-          <CardTitle className="text-2xl">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Welcome Back
+          </CardTitle>
           <CardDescription>Sign in to your VendorConnect account</CardDescription>
         </CardHeader>
         <CardContent>
@@ -85,7 +77,11 @@ export default function LoginPage() {
               <Input id="password" name="password" type="password" required placeholder="••••••••" />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              disabled={loading}
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
@@ -93,9 +89,16 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center text-sm">
             <span className="text-gray-600">Don't have an account? </span>
-            <Link href="/auth/signup" className="text-orange-600 hover:text-orange-500 font-medium">
+            <Link href="/auth/signup" className="text-purple-600 hover:text-purple-500 font-medium">
               Sign up
             </Link>
+          </div>
+
+          <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-700 font-medium mb-2">Demo Accounts:</p>
+            <p className="text-xs text-blue-600">Vendor: vendor@example.com</p>
+            <p className="text-xs text-blue-600">Supplier: supplier@example.com</p>
+            <p className="text-xs text-blue-600">Password: any password</p>
           </div>
         </CardContent>
       </Card>
