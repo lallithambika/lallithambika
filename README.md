@@ -1,5 +1,5 @@
 # VendorConnect - Street Food Vendor Platform
-
+link for the website:https://v0.dev/chat/street-food-hackathon-sH6WQTaYjDD
 VendorConnect is a comprehensive platform designed to connect street food vendors with suppliers, enabling bulk ordering, inventory management, and business growth through AI-powered insights.
 
 ## 🚀 Features
